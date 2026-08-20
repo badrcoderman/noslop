@@ -9,6 +9,7 @@
 - [ ] Keep upstream trees separate from new code.
 - [ ] Confirm exact FW 13.60 target.
 - [ ] Confirm no kernel path is enabled by default.
+- [ ] Review `docs/INITIAL_EVIDENCE.md` before promoting any candidate.
 
 ## 13.60 Evidence Gate
 

@@ -39,6 +39,9 @@ not silently combine the Slopkit and P2JB kernel paths.
 - Kernel escalation: not claimed.
 - P2JB/Poopsploit: reference-only and disabled for 13.60.
 
+The current evidence map is in `docs/INITIAL_EVIDENCE.md`. Local corpus and
+acquisition status are recorded in `manifests/local-evidence.json`.
+
 ## Local Checks
 
 ```text

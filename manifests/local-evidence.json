@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "targetFirmware": "13.60",
+  "verifiedAt": "2026-08-20",
+  "localCorpus": {
+    "path": "/home/user/Documents/webp5/ps5-libs/unp",
+    "availableThrough": "12.70",
+    "exact13_60": false
+  },
+  "existingResearch": {
+    "path": "/home/user/Documents/webp5/ps5-libs/research_12_00",
+    "findingRange": "F-001..F-020",
+    "nextFinding": "F-021",
+    "analysisOnly": true
+  },
+  "13_60Acquisition": {
+    "preferred": "trusted-decrypted-module-corpus",
+    "fallback": "WebKit-userland-module-dump",
+    "specification": "/home/user/Documents/webp5/ps5-libs/research_12_00/data/dump_spec_13_60.md",
+    "status": "not-started"
+  }
+}

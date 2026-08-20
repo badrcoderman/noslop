@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "id",
+    "firmware",
+    "category",
+    "title",
+    "confidence",
+    "facts",
+    "hypotheses",
+    "evidence",
+    "next"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^F-[0-9]{3}$" },
+    "firmware": { "type": "string" },
+    "category": {
+      "enum": [
+        "architectural-observation",
+        "interesting-attack-surface",
+        "strong-bug-candidate",
+        "reproducible-crash",
+        "reproducible-memory-corruption",
+        "confirmed-vulnerability"
+      ]
+    },
+    "title": { "type": "string", "minLength": 1 },
+    "confidence": { "enum": ["low", "medium", "high"] },
+    "facts": { "type": "array", "items": { "type": "string" } },
+    "hypotheses": { "type": "array", "items": { "type": "string" } },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "next": { "type": "string", "minLength": 1 }
+  }
+}
