@@ -343,4 +343,4 @@ async function prepare(p) {
 let fwScript = document.createElement('script');
 document.body.appendChild(fwScript);
 
-fwScript.setAttribute('src', `./offsets/${window.fw_str}.js?v=noslop-1`);
+fwScript.setAttribute('src', `./offsets/${window.fw_str}.js?v=noslop-2`);

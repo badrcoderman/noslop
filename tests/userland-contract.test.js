@@ -9,6 +9,7 @@ const launcher = read("index.html");
 const runtime = read("userland/index.html");
 const profile = read("userland/offsets/13.60.js");
 const dump = read("userland/module-dump.js");
+const mem = read("userland/mem.js");
 const server = read("tools/serve.js");
 
 assert.match(launcher, /userland\/index\.html\?go=1/);
@@ -20,6 +21,13 @@ assert.match(runtime, /dumpPanel/);
 assert.match(runtime, /module-dump\.js/);
 assert.match(runtime, /<progress id="dumpProgress"/);
 assert.ok(runtime.indexOf('<script src="./main.js') < runtime.indexOf("window.offsetsReady"));
+for (const url of ["core.js?v=noslop-2", "mem.js?v=noslop-2",
+    "int64.js?v=noslop-2", "module-dump.js?v=noslop-2"])
+    assert.ok(runtime.includes(url));
+assert.match(mem, /int64\.js\?v=noslop-2/);
+assert.match(mem, /core\.js\?v=noslop-2/);
+assert.doesNotMatch(mem, /core\.js\?v=10/);
+assert.match(read("userland/main.js"), /offsets\/\$\{window\.fw_str\}\.js\?v=noslop-2/);
 assert.doesNotMatch(profile, /OFFSET_KERNEL_/);
 assert.doesNotMatch(runtime, /(?:poopsploit|p2jb|kexp|elfldr|setuid|allproc)/i);
 assert.match(dump, /DUMP_CHUNK_BYTES = 0x4000/);

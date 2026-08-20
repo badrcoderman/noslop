@@ -51,6 +51,7 @@ const launcher = read("index.html");
 const runtime = read("userland/index.html");
 const profile = read("userland/offsets/13.60.js");
 const main = read("userland/main.js");
+const mem = read("userland/mem.js");
 const server = read("tools/serve.js");
 
 if (!launcher.includes('userland/index.html?go=1'))
@@ -74,6 +75,15 @@ if (!main.includes('const supportedFirmwares = ["13.60"]'))
     throw new Error("userland runtime permits neighboring firmware");
 if (!main.includes('./offsets/${window.fw_str}.js'))
     throw new Error("userland runtime does not load its local exact profile");
+if (!runtime.includes("core.js?v=noslop-2")
+    || !runtime.includes("mem.js?v=noslop-2")
+    || !runtime.includes("int64.js?v=noslop-2")
+    || !runtime.includes("module-dump.js?v=noslop-2")
+    || !main.includes("offsets/${window.fw_str}.js?v=noslop-2"))
+    throw new Error("userland runtime cache versions are inconsistent");
+if (!mem.includes("int64.js?v=noslop-2") || !mem.includes("core.js?v=noslop-2")
+    || mem.includes("core.js?v=10"))
+    throw new Error("userland modules can load duplicate core/int64 instances");
 const dump = read("userland/module-dump.js");
 if (!dump.includes("DUMP_CHUNK_BYTES = 0x4000")
     || !dump.includes("DUMP_MAX_BYTES = 0x4000000")
