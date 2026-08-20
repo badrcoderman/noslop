@@ -4,7 +4,8 @@ coverage/
 .cache/
 
 # Local upstream checkouts are pinned by manifests, not committed wholesale.
-upstream/*/.git/
+upstream/*
+!upstream/README.md
 
 # Firmware dumps, payloads, and console captures stay outside Git.
 corpus/
