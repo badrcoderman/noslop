@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const { profile, isCapabilityEnabled, canRunKernelPath } = require("../src/profile");
+const { validateDumpMetadata } = require("../src/dump-contract");
 
 const evidence = JSON.parse(fs.readFileSync("manifests/local-evidence.json", "utf8"));
 const findingSchema = JSON.parse(fs.readFileSync("findings/schema.json", "utf8"));
@@ -16,5 +17,28 @@ assert.equal(evidence.targetFirmware, "13.60");
 assert.equal(evidence.localCorpus.exact13_60, false);
 assert.equal(evidence.existingResearch.nextFinding, "F-021");
 assert.equal(findingSchema.properties.id.pattern, "^F-[0-9]{3}$");
+assert.deepEqual(validateDumpMetadata({
+    firmware: "13.60",
+    module: "libSceIpmi.sprx",
+    base: "0x900000000",
+    byteLength: 0x1000,
+}), {
+    firmware: "13.60",
+    module: "libSceIpmi.sprx",
+    base: "0x900000000",
+    byteLength: 0x1000,
+});
+assert.throws(() => validateDumpMetadata({
+    firmware: "13.20",
+    module: "libSceIpmi.sprx",
+    base: "0x900000000",
+    byteLength: 0x1000,
+}), /exact FW 13\.60/);
+assert.throws(() => validateDumpMetadata({
+    firmware: "13.60",
+    module: "libSceIpmi.sprx",
+    base: "0x900000000",
+    byteLength: 0x4000001,
+}), /byteLength/);
 
 console.log("profile contract: PASS");

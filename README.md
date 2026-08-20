@@ -50,5 +50,12 @@ npm run check
 npm run upstream:verify
 ```
 
+When a 13.60 module dump is available, verify its metadata and hash without
+loading it into the exploit runtime:
+
+```text
+node tools/verify-module-dump.js --module libSceIpmi.sprx --file ./dump.bin --base 0x900000000
+```
+
 The first commit intentionally contains no opaque firmware binaries, kernel
 payloads, or production exploit path.
