@@ -39,6 +39,7 @@ function assertLocalReferences(relativePath) {
     "userland/rop.js",
     "userland/rop_slave.js",
     "userland/syscalls.js",
+    "userland/module-dump.js",
     "userland/offsets/13.60.js",
     "tools/serve.js",
 ].forEach(assertFile);
@@ -50,6 +51,7 @@ const launcher = read("index.html");
 const runtime = read("userland/index.html");
 const profile = read("userland/offsets/13.60.js");
 const main = read("userland/main.js");
+const server = read("tools/serve.js");
 
 if (!launcher.includes('userland/index.html?go=1'))
     throw new Error("root launcher does not point to the userland proof");
@@ -57,6 +59,11 @@ if (!launcher.includes('TARGET = "13.60"'))
     throw new Error("root launcher target is not exact FW 13.60");
 if (!runtime.includes("USERLAND-RW-PROOF") || !runtime.includes("kernel_escalation=disabled"))
     throw new Error("userland page is missing its proof contract");
+if (!runtime.includes('"dumpPanel"') || !runtime.includes("module-dump.js"))
+    throw new Error("userland page is missing the guarded dump section");
+if (!runtime.includes("<progress id=\"dumpProgress\"")
+    || !runtime.includes("dumpPreflightElement"))
+    throw new Error("userland page is missing dump progress/preflight controls");
 if (runtime.indexOf('<script src="./main.js') > runtime.indexOf("window.offsetsReady"))
     throw new Error("offset readiness is declared before main.js injects the profile");
 if (/OFFSET_KERNEL_|OFFSET_KERNEL_/.test(profile))
@@ -67,5 +74,17 @@ if (!main.includes('const supportedFirmwares = ["13.60"]'))
     throw new Error("userland runtime permits neighboring firmware");
 if (!main.includes('./offsets/${window.fw_str}.js'))
     throw new Error("userland runtime does not load its local exact profile");
+const dump = read("userland/module-dump.js");
+if (!dump.includes("DUMP_CHUNK_BYTES = 0x4000")
+    || !dump.includes("DUMP_MAX_BYTES = 0x4000000")
+    || !dump.includes("buffer = new Uint8Array(plan.chunkBytes)")
+    || /new Uint8Array\([^)]*(?:totalBytes|segment\.size|moduleSize)/.test(dump)
+    || dump.includes("Promise.all"))
+    throw new Error("dump runtime does not meet the bounded streaming contract");
+for (const endpoint of ["/api/dump/preflight", "/api/dump/start", "/api/dump/chunk",
+    "/api/dump/finish", "/api/dump/abort"]) {
+    if (!server.includes(endpoint))
+        throw new Error(`dump server is missing endpoint: ${endpoint}`);
+}
 
 console.log("userland contract: PASS (exact FW 13.60, userland proof only)");

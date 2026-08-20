@@ -14,7 +14,7 @@
       "destination": "userland/mem.js",
       "source": "slopkit/mem.js",
       "sourceSha256": "4a1b688e8061372bc8400e911c8e191b7e19e4b6286dcdeb3eef4971c5168a22",
-      "transformation": "copied; userland typed-array pair only"
+      "transformation": "copied; userland typed-array pair only; exposed bounded readInto"
     },
     {
       "destination": "userland/int64.js",
@@ -26,7 +26,7 @@
       "destination": "userland/main.js",
       "source": "slopkit/main.js",
       "sourceSha256": "5c31c6152f10d8b2679635d3e2aeee6ec3685c6e594323b1c96b4d4f0fe16b4c",
-      "transformation": "restricted to exact 13.60 and local profile loading"
+      "transformation": "restricted to exact 13.60/local profile loading; exposed readInto to prepared handle"
     },
     {
       "destination": "userland/rop.js",

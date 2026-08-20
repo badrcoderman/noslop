@@ -7,6 +7,8 @@ following deliberate boundaries:
 - Exact FW 13.60 only; neighboring profiles are not loaded.
 - The browser primitive, worker ROP preparation, and userland read/write/restore
   proof are enabled as candidate research stages.
+- After proof, the guarded module-dump section performs read-only preflight and
+  sequentially streams executable ELF segments through a 16 KiB buffer.
 - Kernel offsets, credential changes, kernel writes, ELF loaders, kernel
   payloads, and P2JB/Poopsploit adapters are not imported into the launcher.
 - The profile remains unverified until exact 13.60 hardware and module evidence

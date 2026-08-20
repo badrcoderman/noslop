@@ -297,6 +297,7 @@ async function prepare(p) {
         read4: p.read4,
         read2: p.read2,
         read1: p.read1,
+        readInto: p.readInto,
         leakval: p.leakval,
         pre_chain: pre_chain,
         launch_chain: launch_chain,

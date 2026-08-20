@@ -12,11 +12,13 @@
 - [x] Review `docs/INITIAL_EVIDENCE.md` before promoting any candidate.
 - [x] Add the exact-FW root launcher and userland proof runtime.
 - [x] Record source-export and vendored-file provenance.
+- [x] Add dump preflight, progress reporting, bounded chunking, and abort.
 
 ## 13.60 Evidence Gate
 
 - [ ] Obtain a trusted 13.60 module corpus or dump selected modules through the
       existing userland foothold.
+- [ ] Run the dump preflight on exact FW 13.60 hardware before any module read.
 - [ ] Record module base, size, firmware, and SHA-256.
 - [ ] Run relocation-tolerant forward comparison against 12.00/12.70 candidates.
 - [ ] Confirm the actual consumer/host process.

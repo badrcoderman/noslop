@@ -37,6 +37,8 @@ not silently combine the Slopkit and P2JB kernel paths.
 - Profile contract: implemented.
 - Root and userland entrypoints: implemented as a userland-proof-only runtime.
 - Userland read/write proof: candidate runtime, not hardware-verified.
+- Guarded module preflight, progress UI, and bounded streaming protocol:
+  implemented for already-loaded modules.
 - 13.60 kernel corpus: not available locally.
 - 13.60 module acquisition: next research stage.
 - Kernel escalation: not claimed.
@@ -73,3 +75,6 @@ The repository contains no opaque firmware binaries, kernel payloads, or
 production kernel exploit path. The userland source under `userland/` is
 reference-derived and remains subject to license review and exact-FW hardware
 validation.
+
+The dump stage is documented in `docs/DUMP_RUNTIME.md`. It writes only to the
+ignored local `corpus/dumps/` directory and never commits dump bytes.

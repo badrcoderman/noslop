@@ -27,6 +27,33 @@
     white-space: pre-wrap; color: #bce8c8;
   }
   #summary.on { display: block; }
+  #dumpPanel {
+    display: none; margin-bottom: 14px; padding: 14px;
+    border: 1px solid #334154; border-radius: 5px; background: #111821;
+  }
+  #dumpPanel.on { display: block; }
+  #dumpPanel h2 { margin: 0 0 8px; font-size: 20px; color: #f2f4f8; }
+  #dumpPanel p { margin: 6px 0 12px; color: #91a0b2; font-size: 14px; }
+  #dumpControls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  #dumpControls select, #dumpControls button {
+    min-height: 38px; padding: 7px 10px; border: 1px solid #3a4a5e;
+    border-radius: 5px; background: #172130; color: #d8e6f8;
+    font: inherit; font-size: 14px;
+  }
+  #dumpControls button { cursor: pointer; }
+  #dumpControls button:disabled { cursor: not-allowed; opacity: .4; }
+  #dumpControls button:focus, #dumpControls select:focus {
+    outline: 3px solid #f1dfad; outline-offset: 2px;
+  }
+  #dumpProgress { display: block; width: 100%; height: 18px; margin-top: 14px; }
+  #dumpStatus { min-height: 1.3em; margin-top: 8px; color: #d6b66d; font-size: 14px; }
+  #dumpStatus.ok { color: #8ee0a5; }
+  #dumpStatus.bad { color: #ff9ca5; }
+  #dumpChecks {
+    max-height: 150px; overflow: auto; margin: 10px 0 0; padding: 8px;
+    border: 1px solid #27313e; background: #0d1218; color: #8898ab;
+    white-space: pre-wrap; font-size: 12px; line-height: 1.3;
+  }
   #log {
     min-height: 180px; max-height: 62vh; overflow: auto; margin: 0;
     padding: 12px 14px; border: 1px solid #27313e; border-radius: 5px;
@@ -48,6 +75,27 @@
 <p id="sub">Exact FW 13.60 candidate profile. Kernel escalation is disabled.</p>
 <div id="stage">Waiting for an explicit <b>?go=1</b> launch.</div>
 <pre id="summary"></pre>
+<section id="dumpPanel" aria-live="polite">
+  <h2>Module dump</h2>
+  <p>
+    Preflight is read-only. Dumping uses one 16 KiB buffer, sequential host
+    acknowledgements, and mapped executable ELF segments only.
+  </p>
+  <div id="dumpControls">
+    <label for="dumpModule">Module</label>
+    <select id="dumpModule">
+      <option value="libkernel_web">libkernel_web.sprx</option>
+      <option value="libSceNKWebKit">libSceNKWebKit.sprx</option>
+      <option value="libSceLibcInternal">libSceLibcInternal.sprx</option>
+    </select>
+    <button id="dumpPreflight" type="button">Run Preflight</button>
+    <button id="dumpStart" type="button" disabled>Start Dump</button>
+    <button id="dumpAbort" type="button" disabled>Abort</button>
+  </div>
+  <progress id="dumpProgress" max="100" value="0"></progress>
+  <div id="dumpStatus">Dump is locked until userland proof passes.</div>
+  <pre id="dumpChecks"></pre>
+</section>
 <pre id="log"></pre>
 <nav id="nav">
   <a href="../index.html">Back</a>
@@ -62,7 +110,18 @@ const query = new URLSearchParams(location.search);
 const stageElement = document.getElementById("stage");
 const summaryElement = document.getElementById("summary");
 const logElement = document.getElementById("log");
+const dumpPanelElement = document.getElementById("dumpPanel");
+const dumpModuleElement = document.getElementById("dumpModule");
+const dumpPreflightElement = document.getElementById("dumpPreflight");
+const dumpStartElement = document.getElementById("dumpStart");
+const dumpAbortElement = document.getElementById("dumpAbort");
+const dumpProgressElement = document.getElementById("dumpProgress");
+const dumpStatusElement = document.getElementById("dumpStatus");
+const dumpChecksElement = document.getElementById("dumpChecks");
 let sequence = 0;
+let dumpP = null;
+let dumpPlan = null;
+let dumpAbortController = null;
 
 function clean(value) {
     return String(value ?? "").replace(/[\r\n\t]+/g, " ").slice(0, 320);
@@ -123,6 +182,10 @@ window.offsetsReady = new Promise(function (resolve, reject) {
 import { establishPrimitive, fakeCellReleased } from "./core.js?v=noslop-1";
 import { installWindowP, pairStatus } from "./mem.js?v=noslop-1";
 import { int64 } from "./int64.js?v=noslop-1";
+import {
+    DUMP_CHUNK_BYTES, DumpPreflightError, dumpModule, formatBytes,
+    formatDuration, preflightDump,
+} from "./module-dump.js?v=noslop-1";
 
 function assertExactFirmware() {
     const match = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
@@ -191,7 +254,7 @@ async function run() {
     mark("BOOT", "exact-fw=" + TARGET_FIRMWARE + " kernel-path=disabled");
     mark("PROFILE-READY", "gadget-count=" + Object.keys(wk_gadgetmap).length);
 
-    const carrier = await establishPrimitive({
+    let carrier = await establishPrimitive({
         maxAttempts: 1,
         onEvent(tag, detail, attempt) {
             mark(tag, `attempt=${attempt || 1}${detail ? " " + detail : ""}`);
@@ -210,6 +273,12 @@ async function run() {
     if (!pairStatus.promoted)
         throw new Error("userland pair was not promoted: " + pairStatus.error);
     mark("USERLAND-PRIMITIVE", "promoted=1 fake-cell-released=" + fakeCellReleased());
+    carrier = null;
+    if (typeof globalThis.gc === "function") {
+        try { globalThis.gc(); } catch { }
+    }
+    await new Promise(resolve => setTimeout(resolve, 750));
+    mark("PRIMITIVE-MEMORY-RELIEF", "large-carrier-reference-dropped=1");
 
     if (typeof prepare !== "function")
         throw new Error("worker preparation function is unavailable");
@@ -232,7 +301,121 @@ async function run() {
     stage("USERLAND PROOF PASSED. Kernel escalation remains disabled.", "ok");
     mark("RESULT", "webkit_userland_rw=candidate kernel_exploit=false");
     window.noslopResult = { firmware: TARGET_FIRMWARE, capability: "webkit_userland_rw", rw };
+    dumpP = prepared.p;
+    dumpPanelElement.className = "on";
+    dumpPreflightElement.disabled = false;
+    dumpStatusElement.textContent = `Dump locked to one reusable ${formatBytes(DUMP_CHUNK_BYTES)} buffer.`;
 }
+
+function dumpCheckLine(result) {
+    const state = result.ok ? "PASS" : "FAIL";
+    const line = `${state} ${result.name}${result.detail ? `: ${result.detail}` : ""}`;
+    dumpChecksElement.textContent += (dumpChecksElement.textContent ? "\n" : "") + line;
+    dumpChecksElement.scrollTop = dumpChecksElement.scrollHeight;
+    mark("DUMP-CHECK-" + state, result.name + (result.detail ? "-" + result.detail : ""));
+}
+
+function dumpProgress(info) {
+    const percent = Math.max(0, Math.min(100, Number(info.percent || 0)));
+    dumpProgressElement.value = percent;
+    if (info.phase === "dumping") {
+        const rate = info.rate ? `${formatBytes(info.rate)}/s` : "--";
+        const eta = formatDuration(info.etaSeconds);
+        dumpStatusElement.className = "";
+        dumpStatusElement.textContent = `${info.module}: ${formatBytes(info.doneBytes)} / `
+            + `${formatBytes(info.totalBytes)} (${percent.toFixed(1)}%)  ${rate}  ETA ${eta}`;
+        return;
+    }
+    if (info.phase === "finished") {
+        dumpStatusElement.className = "ok";
+        dumpStatusElement.textContent = "Dump finished: "
+            + (info.result && info.result.sha256 ? info.result.sha256 : "hash pending");
+        return;
+    }
+    if (info.phase === "aborted") {
+        dumpStatusElement.className = "bad";
+        dumpStatusElement.textContent = "Dump aborted: " + info.error;
+    }
+}
+
+dumpModuleElement.addEventListener("change", function () {
+    dumpPlan = null;
+    dumpStartElement.disabled = true;
+    dumpProgressElement.value = 0;
+    dumpChecksElement.textContent = "";
+    dumpStatusElement.className = "";
+    dumpStatusElement.textContent = "Run preflight before starting a dump.";
+});
+
+dumpPreflightElement.addEventListener("click", async function () {
+    if (!dumpP) return;
+    dumpPlan = null;
+    dumpStartElement.disabled = true;
+    dumpAbortElement.disabled = true;
+    dumpModuleElement.disabled = false;
+    dumpChecksElement.textContent = "";
+    dumpStatusElement.className = "";
+    dumpStatusElement.textContent = "Running read-only dump preflight...";
+    dumpPreflightElement.disabled = true;
+    try {
+        dumpPlan = await preflightDump({
+            p: dumpP,
+            pairStatus,
+            firmware: TARGET_FIRMWARE,
+            targetKey: dumpModuleElement.value,
+            onCheck: dumpCheckLine,
+        });
+        dumpStartElement.disabled = false;
+        dumpStatusElement.className = "ok";
+        dumpStatusElement.textContent = `Preflight passed: ${dumpPlan.target.name}, `
+            + `${formatBytes(dumpPlan.totalBytes)} in ${dumpPlan.segments.length} executable segment(s).`;
+        mark("DUMP-PREFLIGHT-PASS", dumpPlan.target.name + "-bytes=" + dumpPlan.totalBytes);
+    } catch (error) {
+        const checks = error instanceof DumpPreflightError ? error.checks : [];
+        if (!checks.length)
+            dumpCheckLine({ ok: false, name: "exception", detail: error.message || error });
+        dumpStatusElement.className = "bad";
+        dumpStatusElement.textContent = "Preflight failed: " + (error.message || error);
+        mark("DUMP-PREFLIGHT-FAIL", error.message || error);
+    } finally {
+        dumpPreflightElement.disabled = false;
+    }
+});
+
+dumpAbortElement.addEventListener("click", function () {
+    if (dumpAbortController)
+        dumpAbortController.abort();
+});
+
+dumpStartElement.addEventListener("click", async function () {
+    if (!dumpP || !dumpPlan) return;
+    dumpPreflightElement.disabled = true;
+    dumpStartElement.disabled = true;
+    dumpAbortElement.disabled = false;
+    dumpModuleElement.disabled = true;
+    dumpProgressElement.value = 0;
+    dumpAbortController = new AbortController();
+    try {
+        await dumpModule({
+            plan: dumpPlan,
+            p: dumpP,
+            signal: dumpAbortController.signal,
+            onProgress: dumpProgress,
+        });
+        mark("DUMP-FINISHED", dumpPlan.target.name);
+    } catch (error) {
+        dumpStatusElement.className = "bad";
+        dumpStatusElement.textContent = "Dump stopped: " + (error.message || error);
+        mark("DUMP-STOPPED", error.message || error);
+    } finally {
+        dumpAbortController = null;
+        dumpAbortElement.disabled = true;
+        dumpModuleElement.disabled = false;
+        dumpPreflightElement.disabled = false;
+        dumpStartElement.disabled = true;
+        dumpPlan = null;
+    }
+});
 
 if (query.get("go") !== "1") {
     stage("Not armed. Return to the launcher and choose RUN USERLAND PROOF.");

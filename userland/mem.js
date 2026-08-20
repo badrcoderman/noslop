@@ -738,7 +738,8 @@ export function installWindowP(c, options) {
     const prim = {
         read1, read2, read4, read8,
         write1, write2, write4, write8,
-        leakval
+        leakval,
+        readInto
     };
     globalThis.p = prim;
 
