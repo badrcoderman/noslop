@@ -119,6 +119,8 @@ const dumpProgressElement = document.getElementById("dumpProgress");
 const dumpStatusElement = document.getElementById("dumpStatus");
 const dumpChecksElement = document.getElementById("dumpChecks");
 let sequence = 0;
+const MAX_LOG_LINES = 64;
+const logLines = [];
 let dumpP = null;
 let dumpPlan = null;
 let dumpAbortController = null;
@@ -130,7 +132,10 @@ function clean(value) {
 function mark(tag, detail) {
     const line = `${String(++sequence).padStart(4, "0")} ${tag}`
         + (detail ? ` ${clean(detail)}` : "");
-    logElement.textContent += (logElement.textContent ? "\n" : "") + line;
+    logLines.push(line);
+    if (logLines.length > MAX_LOG_LINES)
+        logLines.splice(0, logLines.length - MAX_LOG_LINES);
+    logElement.textContent = logLines.join("\n");
     logElement.scrollTop = logElement.scrollHeight;
     return line;
 }
@@ -153,6 +158,7 @@ window.jb = {
 };
 
 document.getElementById("clear").addEventListener("click", function () {
+    logLines.length = 0;
     logElement.textContent = "";
     sequence = 0;
 });
@@ -252,7 +258,26 @@ async function run() {
     await window.offsetsReady;
     assertProfile();
     mark("BOOT", "exact-fw=" + TARGET_FIRMWARE + " kernel-path=disabled");
+    mark("MEMORY-PROFILE", "low-carrier=4500000-drain=128-compose-ms=550-max-attempts=1");
     mark("PROFILE-READY", "gadget-count=" + Object.keys(wk_gadgetmap).length);
+
+    // A renderer reload can restore the previous serialized exploit graph in
+    // history.state. Purge it before building the next graph or the two graphs
+    // can overlap and exhaust the WebProcess immediately.
+    mark("PRIMITIVE-HISTORY-PURGE-PRE", "replace-state-null");
+    try {
+        history.replaceState(null, "");
+    } catch (error) {
+        mark("PRIMITIVE-HISTORY-PURGE-FAIL",
+            (error && error.name ? error.name : "Error") + ":"
+            + String(error && error.message || error));
+        throw error;
+    }
+    if (typeof globalThis.gc === "function") {
+        try { globalThis.gc(); } catch { }
+    }
+    await new Promise(resolve => setTimeout(resolve, 750));
+    mark("PRIMITIVE-HISTORY-PURGED", "settled-ms=750");
 
     let carrier = await establishPrimitive({
         maxAttempts: 1,

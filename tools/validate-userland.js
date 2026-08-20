@@ -84,6 +84,16 @@ if (!runtime.includes("core.js?v=noslop-2")
 if (!mem.includes("int64.js?v=noslop-2") || !mem.includes("core.js?v=noslop-2")
     || mem.includes("core.js?v=10"))
     throw new Error("userland modules can load duplicate core/int64 instances");
+const core = read("userland/core.js");
+if (!core.includes("const CARRIER_SLOTS = 4500000")
+    || !core.includes("const DRAIN_COUNT = 128")
+    || !core.includes("COMPOSE_DELAY_MS = CAPTURE_DELAY_MS + 500")
+    || !core.includes("capturedString = null;"))
+    throw new Error("userland primitive is not using the low-memory profile");
+if (!runtime.includes("PRIMITIVE-HISTORY-PURGE-PRE")
+    || !runtime.includes("history.replaceState(null, \"\")")
+    || !runtime.includes("settled-ms=750"))
+    throw new Error("userland primitive is missing the pre-attempt history purge");
 const dump = read("userland/module-dump.js");
 if (!dump.includes("DUMP_CHUNK_BYTES = 0x4000")
     || !dump.includes("DUMP_MAX_BYTES = 0x4000000")

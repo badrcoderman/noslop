@@ -8,7 +8,7 @@
       "destination": "userland/core.js",
       "source": "slopkit/core.js",
       "sourceSha256": "c3c11d24c14bfc2b69eca17273229c3512f3fb4e354a68948eccd3c61dede686",
-      "transformation": "copied; used only for the WebKit primitive"
+      "transformation": "adapted to the proven low-memory profile; used only for the WebKit primitive"
     },
     {
       "destination": "userland/mem.js",
