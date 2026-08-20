@@ -2,14 +2,16 @@
 
 ## Before Adding Runtime Code
 
-- [ ] Create the private GitHub repository.
-- [ ] Pin upstream commits and record hashes.
-- [ ] Run `npm run upstream:verify` after every upstream update.
-- [ ] Review license and attribution status.
-- [ ] Keep upstream trees separate from new code.
-- [ ] Confirm exact FW 13.60 target.
-- [ ] Confirm no kernel path is enabled by default.
-- [ ] Review `docs/INITIAL_EVIDENCE.md` before promoting any candidate.
+- [x] Create the private GitHub repository.
+- [x] Pin upstream commits and record hashes.
+- [x] Run `npm run upstream:verify` after every upstream update.
+- [x] Review license and attribution status.
+- [x] Keep upstream trees separate from new code.
+- [x] Confirm exact FW 13.60 target.
+- [x] Confirm no kernel path is enabled by default.
+- [x] Review `docs/INITIAL_EVIDENCE.md` before promoting any candidate.
+- [x] Add the exact-FW root launcher and userland proof runtime.
+- [x] Record source-export and vendored-file provenance.
 
 ## 13.60 Evidence Gate
 

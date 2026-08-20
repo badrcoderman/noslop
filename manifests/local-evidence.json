@@ -18,5 +18,17 @@
     "fallback": "WebKit-userland-module-dump",
     "specification": "/home/user/Documents/webp5/ps5-libs/research_12_00/data/dump_spec_13_60.md",
     "status": "not-started"
+  },
+  "userlandRuntime": {
+    "entrypoint": "userland/index.html",
+    "source": "slopkit-main-2-local:userland-extracted",
+    "status": "candidate",
+    "kernelStageImported": false,
+    "proofStages": [
+      "exact-firmware",
+      "webkit-primitive",
+      "worker-rop-getpid",
+      "userland-read-write-restore"
+    ]
   }
 }

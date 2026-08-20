@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "targetFirmware": "13.60",
+  "policy": "private-reference-derived-until-license-review",
+  "sourceRoot": "/home/user/Documents/webp5/slopkit-main (2)",
+  "files": [
+    {
+      "destination": "userland/core.js",
+      "source": "slopkit/core.js",
+      "sourceSha256": "c3c11d24c14bfc2b69eca17273229c3512f3fb4e354a68948eccd3c61dede686",
+      "transformation": "copied; used only for the WebKit primitive"
+    },
+    {
+      "destination": "userland/mem.js",
+      "source": "slopkit/mem.js",
+      "sourceSha256": "4a1b688e8061372bc8400e911c8e191b7e19e4b6286dcdeb3eef4971c5168a22",
+      "transformation": "copied; userland typed-array pair only"
+    },
+    {
+      "destination": "userland/int64.js",
+      "source": "slopkit/int64.js",
+      "sourceSha256": "a79a3334a3f2c75b9a238ab1093796e326251c97ac5d02663eae5b14bf80f652",
+      "transformation": "copied"
+    },
+    {
+      "destination": "userland/main.js",
+      "source": "slopkit/main.js",
+      "sourceSha256": "5c31c6152f10d8b2679635d3e2aeee6ec3685c6e594323b1c96b4d4f0fe16b4c",
+      "transformation": "restricted to exact 13.60 and local profile loading"
+    },
+    {
+      "destination": "userland/rop.js",
+      "source": "slopkit/rop.js",
+      "sourceSha256": "489e71f9b9c2100e4061371abb89ff46ad251006418cb57bb34d92416368ec04",
+      "transformation": "removed dormant thread_rop/kernel-stage helper"
+    },
+    {
+      "destination": "userland/rop_slave.js",
+      "source": "slopkit/rop_slave.js",
+      "sourceSha256": "a0bd7b7433762b7ce56a62c7109fa3bbb9077e2b90954f9ab25d9bf04b5dbc47",
+      "transformation": "copied; worker proof only"
+    },
+    {
+      "destination": "userland/offsets/13.60.js",
+      "source": "offsets/13.60.js",
+      "sourceSha256": "dc939557beefcf7b3fb79f1df1927717a0e7e0243c6ad722f3bcad282d9384c9",
+      "transformation": "removed all OFFSET_KERNEL_* and Stage-5 loader declarations"
+    },
+    {
+      "destination": "userland/syscalls.js",
+      "source": null,
+      "sourceSha256": null,
+      "transformation": "new minimal SYS_GETPID declaration for userland proof"
+    }
+  ]
+}

@@ -13,3 +13,8 @@ and licenses are not automatically included in the noslop release:
 
 Attribution and license compatibility must be reviewed before vendoring source
 or distributing binaries.
+
+The current `userland/` runtime is derived from the local Slopkit main (2)
+WebKit/userland and worker reference. It is kept in the private research
+repository for authorized validation and is not represented as an upstream
+license grant.

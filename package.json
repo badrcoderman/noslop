@@ -5,8 +5,9 @@
   "description": "FW 13.60 post-WebKit security research workspace",
   "type": "commonjs",
   "scripts": {
-    "check": "node --check src/profile.js && node --check src/dump-contract.js && node --check tools/validate-manifests.js && node --check tools/verify-module-dump.js && node tools/validate-manifests.js",
-    "test": "node tests/manifest-contract.test.js && node tools/validate-manifests.js",
-    "upstream:verify": "node tools/verify-upstream.js"
+    "check": "node --check src/profile.js && node --check src/dump-contract.js && node --check tools/validate-manifests.js && node --check tools/verify-module-dump.js && node --check tools/validate-userland.js && node --check tools/serve.js && node --check userland/main.js && node --check userland/rop.js && node --check userland/rop_slave.js && node --check userland/syscalls.js && node --check userland/offsets/13.60.js && node --input-type=module --check < userland/core.js && node --input-type=module --check < userland/mem.js && node --input-type=module --check < userland/int64.js && node tools/validate-manifests.js && node tools/validate-userland.js",
+    "test": "node tests/manifest-contract.test.js && node tests/userland-contract.test.js && node tools/validate-manifests.js && node tools/validate-userland.js",
+    "upstream:verify": "node tools/verify-upstream.js",
+    "serve": "node tools/serve.js"
   }
 }

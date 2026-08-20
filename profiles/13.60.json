@@ -5,7 +5,9 @@
   "status": "candidate",
   "entrypoint": {
     "webkit": "candidate",
-    "source": "slopkit-main-2-local",
+    "path": "userland/index.html",
+    "source": "slopkit-main-2-local:userland-extracted",
+    "mode": "userland-proof-only",
     "hardwareVerified": false
   },
   "capabilities": {

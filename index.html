@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>noslop | FW 13.60</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { min-height: 100%; margin: 0; }
+  body {
+    display: grid; place-items: center; padding: 24px; box-sizing: border-box;
+    background: #0b0d10; color: #d8dee9;
+    font: 18px/1.45 Arial, sans-serif;
+  }
+  main {
+    width: min(620px, 100%); padding: 32px; box-sizing: border-box;
+    border: 1px solid #2d3745; border-radius: 14px;
+    background: linear-gradient(145deg, #151b24, #0f131a);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .38);
+  }
+  h1 { margin: 0 0 4px; color: #f2f4f8; font-size: 34px; }
+  .sub { margin: 0 0 26px; color: #93a4b8; }
+  #status {
+    min-height: 3.2em; margin: 0 0 22px; padding: 14px 16px;
+    border-left: 4px solid #d6b66d; background: #211d14; color: #f1dfad;
+  }
+  #status.ok { border-left-color: #55c878; background: #14251b; color: #c8f2d3; }
+  #status.bad { border-left-color: #e05d69; background: #2b171a; color: #ffd1d5; }
+  #run {
+    display: block; padding: 15px 20px; border-radius: 9px;
+    background: #315fbd; color: #fff; text-align: center;
+    font-size: 21px; font-weight: 700; text-decoration: none;
+  }
+  #run[aria-disabled="true"] { opacity: .42; pointer-events: none; }
+  #run:focus { outline: 3px solid #f1dfad; outline-offset: 3px; }
+  .note { margin: 24px 0 0; color: #8795a7; font-size: 14px; }
+  code { color: #cbd8eb; }
+</style>
+</head>
+<body>
+<main>
+  <h1>noslop</h1>
+  <p class="sub">FW 13.60 WebKit userland research</p>
+  <p id="status">Checking the browser firmware...</p>
+  <a id="run" aria-disabled="true" tabindex="-1">RUN USERLAND PROOF</a>
+  <p class="note">
+    This launcher accepts exact FW 13.60 only. It has no neighboring-firmware
+    fallback and no P2JB, Poopsploit, kernel, credential, or payload stage.
+  </p>
+</main>
+<script>
+(function () {
+    "use strict";
+    const TARGET = "13.60";
+    const status = document.getElementById("status");
+    const run = document.getElementById("run");
+    const match = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
+    const firmware = match ? match[1] : "";
+
+    if (firmware === TARGET) {
+        status.className = "ok";
+        status.textContent = "Exact FW 13.60 detected. Userland proof is available.";
+        run.href = "userland/index.html?go=1";
+        run.removeAttribute("aria-disabled");
+        run.removeAttribute("tabindex");
+        return;
+    }
+
+    status.className = "bad";
+    status.textContent = firmware
+        ? "FW " + firmware + " detected. noslop requires exact FW 13.60."
+        : "This page must be opened in the PS5 browser on exact FW 13.60.";
+})();
+</script>
+</body>
+</html>

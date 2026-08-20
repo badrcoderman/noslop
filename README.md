@@ -2,7 +2,8 @@
 
 FW 13.60 post-WebKit security research.
 
-`noslop` starts from an existing WebKit userland foothold and investigates
+`noslop` contains a runnable, exact-FW-13.60 WebKit userland proof stage and
+investigates
 whether a separate, reachable bug exists in a privileged service, IPC handler,
 media process, or kernel boundary. It is not a claim that P2JB or Poopsploit
 supports FW 13.60.
@@ -34,6 +35,8 @@ not silently combine the Slopkit and P2JB kernel paths.
 ## Current Status
 
 - Profile contract: implemented.
+- Root and userland entrypoints: implemented as a userland-proof-only runtime.
+- Userland read/write proof: candidate runtime, not hardware-verified.
 - 13.60 kernel corpus: not available locally.
 - 13.60 module acquisition: next research stage.
 - Kernel escalation: not claimed.
@@ -50,6 +53,15 @@ npm run check
 npm run upstream:verify
 ```
 
+Serve the pages over HTTP so ES modules and the worker use the same origin:
+
+```text
+npm run serve -- --host 0.0.0.0 --port 8080
+```
+
+Open the host's LAN address from the PS5 User's Guide. Do not use a
+`file://` URL for the userland page.
+
 When a 13.60 module dump is available, verify its metadata and hash without
 loading it into the exploit runtime:
 
@@ -57,5 +69,7 @@ loading it into the exploit runtime:
 node tools/verify-module-dump.js --module libSceIpmi.sprx --file ./dump.bin --base 0x900000000
 ```
 
-The first commit intentionally contains no opaque firmware binaries, kernel
-payloads, or production exploit path.
+The repository contains no opaque firmware binaries, kernel payloads, or
+production kernel exploit path. The userland source under `userland/` is
+reference-derived and remains subject to license review and exact-FW hardware
+validation.

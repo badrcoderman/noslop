@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "canonical": [
+    {
+      "id": "development-testing",
+      "path": "/home/user/Projects/PS5 Research & Development - Development - testing [1026659785556381786].txt",
+      "lines": 343099,
+      "sha256": "5b8e204cd453fc6ef34b209214d6aeba69b698d052c2a664ffe393d2b629209f"
+    },
+    {
+      "id": "development-webkit",
+      "path": "/home/user/Projects/PS5 Research & Development - Development - webkit.txt",
+      "lines": 8481,
+      "sha256": "aae64cd522d62b4825e52abd700986322f863c2e25c658742c9e6693f7e7005c"
+    },
+    {
+      "id": "questions-and-issues",
+      "path": "/home/user/Projects/PS5 Research & Development - Text Channels - questions-and-issues [1026658439155425360].txt",
+      "lines": 493309,
+      "sha256": "5c622794e59f5e47a1ffb89f836ae45b4a29b4e8eeae784cfca3a9fab81efa04"
+    }
+  ],
+  "supplemental": [
+    {
+      "path": "/home/user/Projects/s/PS5 Research & Development - Development - testing [1026659785556381786].txt",
+      "lines": 225700,
+      "sha256": "7401dc8f3466197dae0d8f0456fd4c7caa31778f0d03ac6f82e3ee9306f1b4c9",
+      "status": "superseded-truncated-subset"
+    }
+  ]
+}
