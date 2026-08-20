@@ -44,6 +44,7 @@ not silently combine the Slopkit and P2JB kernel paths.
 ```text
 npm test
 npm run check
+npm run upstream:verify
 ```
 
 The first commit intentionally contains no opaque firmware binaries, kernel

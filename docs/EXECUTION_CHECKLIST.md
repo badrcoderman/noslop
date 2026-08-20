@@ -4,6 +4,7 @@
 
 - [ ] Create the private GitHub repository.
 - [ ] Pin upstream commits and record hashes.
+- [ ] Run `npm run upstream:verify` after every upstream update.
 - [ ] Review license and attribution status.
 - [ ] Keep upstream trees separate from new code.
 - [ ] Confirm exact FW 13.60 target.

@@ -6,6 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "check": "node --check src/profile.js && node --check tools/validate-manifests.js && node tools/validate-manifests.js",
-    "test": "node tests/manifest-contract.test.js && node tools/validate-manifests.js"
+    "test": "node tests/manifest-contract.test.js && node tools/validate-manifests.js",
+    "upstream:verify": "node tools/verify-upstream.js"
   }
 }
