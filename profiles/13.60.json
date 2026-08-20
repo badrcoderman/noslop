@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "ps5-fw-13.60",
+  "firmware": "13.60",
+  "status": "candidate",
+  "entrypoint": {
+    "webkit": "candidate",
+    "source": "slopkit-main-2-local",
+    "hardwareVerified": false
+  },
+  "capabilities": {
+    "userlandRce": true,
+    "userlandArbitraryReadWrite": "candidate",
+    "workerRop": "candidate",
+    "crossProcessBug": "unknown",
+    "kernelReadWrite": false,
+    "kernelExploit": false,
+    "p2jb": false,
+    "poopsploit": false
+  },
+  "evidence": {
+    "kernelCorpus": false,
+    "moduleCorpus": false,
+    "hardwareRuns": 0,
+    "findingLedgerNext": "F-021"
+  },
+  "gates": [
+    "exact firmware match",
+    "module or memory-dump evidence",
+    "reachability from WebKit userland",
+    "attacker-controlled input evidence",
+    "safe reproducible proof",
+    "independent hardware confirmation"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-20",
+  "policy": "reference-only-until-license-and-hardware-review",
+  "sources": [
+    {
+      "name": "pooP2JB-dev",
+      "kind": "git",
+      "url": "https://github.com/soniciso1/pooP2JB-dev.git",
+      "commit": "848c53e5a8e95dc466fef368d91f4b2974ff6782",
+      "reviewed": true,
+      "documentedFirmware": ["9.00-12.70"],
+      "13.60KernelSupport": false,
+      "licenseStatus": "license-file-missing",
+      "use": "P2JB/Poopsploit architecture, preflight, transport, diagnostics"
+    },
+    {
+      "name": "poopicker",
+      "kind": "git",
+      "url": "https://github.com/soniciso1/poopicker.git",
+      "commit": "4a9f1d0f3779e1623d8a5866572ecfbfb12e640e",
+      "reviewed": true,
+      "documentedFirmware": ["9.00-12.70"],
+      "13.60KernelSupport": false,
+      "licenseStatus": "license-file-missing",
+      "use": "selector UI reference only"
+    },
+    {
+      "name": "slopkit-main-2-local",
+      "kind": "local-reference",
+      "path": "/home/user/Documents/webp5/slopkit-main (2)",
+      "commit": null,
+      "reviewed": true,
+      "documentedFirmware": ["9.00-13.60"],
+      "13.60KernelSupport": false,
+      "licenseStatus": "credits-only-visible",
+      "use": "WebKit/userland and worker reference"
+    },
+    {
+      "name": "slopkit2-local",
+      "kind": "local-reference",
+      "path": "/home/user/Documents/webp5/slopkit2",
+      "commit": null,
+      "reviewed": true,
+      "documentedFirmware": ["9.00-13.60-entrypoint-claims"],
+      "13.60KernelSupport": false,
+      "licenseStatus": "lapse-agpl-notices-present",
+      "use": "Lapse/runtime and entrypoint reference"
+    },
+    {
+      "name": "research-12-00",
+      "kind": "local-research",
+      "path": "/home/user/Documents/webp5/ps5-libs/research_12_00",
+      "commit": null,
+      "reviewed": true,
+      "documentedFirmware": ["12.00-analysis", "12.70-comparison"],
+      "13.60KernelSupport": false,
+      "licenseStatus": "research-workspace",
+      "use": "findings ledger, emulation, reports, and 13.60 dump specification"
+    }
+  ]
+}

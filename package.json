@@ -1,0 +1,11 @@
+{
+  "name": "noslop",
+  "private": true,
+  "version": "0.1.0",
+  "description": "FW 13.60 post-WebKit security research workspace",
+  "type": "commonjs",
+  "scripts": {
+    "check": "node --check src/profile.js && node --check tools/validate-manifests.js && node tools/validate-manifests.js",
+    "test": "node tests/manifest-contract.test.js && node tools/validate-manifests.js"
+  }
+}

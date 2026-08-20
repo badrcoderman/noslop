@@ -1,0 +1,22 @@
+# Local tooling and generated output
+node_modules/
+coverage/
+.cache/
+
+# Local upstream checkouts are pinned by manifests, not committed wholesale.
+upstream/*/.git/
+
+# Firmware dumps, payloads, and console captures stay outside Git.
+corpus/
+*.bin
+*.dmp
+*.elf
+*.sprx
+*.self
+*.pcap
+*.log
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
